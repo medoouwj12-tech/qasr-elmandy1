@@ -44,13 +44,16 @@ export const Header = ({ onOpenAdmin, onOpenCart }) => {
               </div>
             </div>
             <div>
-              <div className="flex items-center space-x-1.5 space-x-reverse">
+              <div className="flex items-center space-x-2 space-x-reverse flex-wrap gap-y-1">
                 <h1 className="text-xl md:text-2xl font-black tracking-tight text-white">
                   قصر المندي
                 </h1>
                 <Sparkles className="w-4 h-4 text-amber-400" />
+                <span className="bg-gradient-to-r from-amber-500/20 to-amber-600/10 border border-amber-500/40 text-amber-300 text-xs font-extrabold px-3 py-1 rounded-full shadow-sm backdrop-blur-sm">
+                  🔥 (ابو شنب فى المشاوي بيتقال عليه حكاوي)
+                </span>
               </div>
-              <p className="text-xs text-amber-400/80 font-medium">Qasr Al-Mandi • أصالة المذاق العربي</p>
+              <p className="text-xs text-amber-400/90 font-bold mt-0.5">Qasr Al-Mandi • أصالة المذاق العربي والمشاوي البلدي</p>
             </div>
           </div>
 

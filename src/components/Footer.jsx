@@ -8,9 +8,12 @@ export const Footer = ({ onOpenAdmin }) => {
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Brand & About */}
         <div className="space-y-3">
-          <div className="flex items-center space-x-2 space-x-reverse text-amber-400">
-            <Crown className="w-6 h-6" />
-            <span className="text-lg font-black text-white">مطعم قصر المندي</span>
+          <div className="flex flex-col space-y-1 text-amber-400">
+            <div className="flex items-center space-x-2 space-x-reverse">
+              <Crown className="w-6 h-6" />
+              <span className="text-lg font-black text-white">مطعم قصر المندي</span>
+            </div>
+            <span className="text-amber-400 font-extrabold text-xs">🔥 (ابو شنب فى المشاوي بيتقال عليه حكاوي)</span>
           </div>
           <p className="leading-relaxed text-slate-400">
             أرقى وجبات المندي الخليجي والمشويات البلدي على أصولها. نضمن لكم الجودة والتجهيز الفاخر بأعلى معايير النظافة والطازج يومياً.
