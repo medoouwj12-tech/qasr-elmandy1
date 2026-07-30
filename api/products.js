@@ -31,16 +31,26 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const { id, is_available, price, name, description } = req.body;
-      const result = await client.query(
-        `UPDATE products SET 
-          is_available = COALESCE($2, is_available),
-          price = COALESCE($3, price),
-          name = COALESCE($4, name),
-          description = COALESCE($5, description)
-         WHERE id = $1 RETURNING *`,
-        [id, is_available, price, name, description]
-      );
+      const { id, is_available, price, name, description, image, category_id, is_popular } = req.body;
+      const fields = [];
+      const values = [id];
+      let paramCount = 2;
+
+      if (is_available !== undefined) { fields.push(`is_available = $${paramCount++}`); values.push(is_available); }
+      if (price !== undefined) { fields.push(`price = $${paramCount++}`); values.push(price); }
+      if (name !== undefined) { fields.push(`name = $${paramCount++}`); values.push(name); }
+      if (description !== undefined) { fields.push(`description = $${paramCount++}`); values.push(description); }
+      if (image !== undefined) { fields.push(`image = $${paramCount++}`); values.push(image); }
+      if (category_id !== undefined) { fields.push(`category_id = $${paramCount++}`); values.push(category_id); }
+      if (is_popular !== undefined) { fields.push(`is_popular = $${paramCount++}`); values.push(is_popular); }
+
+      if (fields.length === 0) {
+        client.release();
+        return res.status(400).json({ error: 'No fields to update' });
+      }
+
+      const query = `UPDATE products SET ${fields.join(', ')} WHERE id = $1 RETURNING *`;
+      const result = await client.query(query, values);
       client.release();
       return res.status(200).json({ success: true, product: result.rows[0] });
     }

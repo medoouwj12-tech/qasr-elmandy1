@@ -1,11 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   X, ShieldCheck, Plus, Edit3, Trash2, Check, AlertCircle, RefreshCw,
   Search, Lock, Layers, Utensils, DollarSign, ToggleLeft, ToggleRight,
   TrendingUp, Calendar, ShoppingBag, Printer, FileSpreadsheet, CheckCircle2,
-  Clock, MapPin, User, Phone
+  Clock, MapPin, User, Phone, Upload, Camera, Image as ImageIcon, Link as LinkIcon, Sparkles
 } from 'lucide-react';
 import { useMenu } from '../context/MenuContext';
+
+const PRESET_FOOD_IMAGES = [
+  { label: 'دجاج مندي', url: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=800&q=80' },
+  { label: 'نصف دجاجة', url: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=800&q=80' },
+  { label: 'لحم ضأن مندي', url: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80' },
+  { label: 'صينية بدوي', url: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=800&q=80' },
+  { label: 'مشويات وريش', url: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80' },
+  { label: 'كباب وكفتة', url: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=800&q=80' },
+  { label: 'سندوتش كباب/تكة', url: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80' },
+  { label: 'عصير/شاي زرد', url: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80' },
+  { label: 'كنافة/حلا', url: 'https://images.unsplash.com/photo-1579372786545-d24232daf58c?auto=format&fit=crop&w=800&q=80' }
+];
+
+const compressAndReadImage = (file) => {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type.startsWith('image/')) {
+      reject(new Error('يرجى اختيار ملف صورة صالحة (JPG, PNG, WEBP)'));
+      return;
+    }
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error('تعذر معالجة الصورة'));
+    };
+    reader.onerror = () => reject(new Error('تعذر قراءة الملف'));
+  });
+};
 
 export const AdminDashboard = ({ isOpen, onClose }) => {
   const {
@@ -39,6 +94,14 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
   const [dateFilter, setDateFilter] = useState('today'); // 'today' | 'week' | 'all'
   const [typeFilter, setTypeFilter] = useState('all'); // 'all' | 'table' | 'delivery'
 
+  // Image Upload & Selection State
+  const fileInputRef = useRef(null);
+  const quickFileInputRef = useRef(null);
+  const [quickUploadTargetId, setQuickUploadTargetId] = useState(null);
+  const [imageTab, setImageTab] = useState('upload'); // 'upload' | 'preset' | 'url'
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
+
   // Add / Edit Product Modal State
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -56,6 +119,52 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [categoryNameAr, setCategoryNameAr] = useState('');
   const [categoryNameEn, setCategoryNameEn] = useState('');
+
+  // Image Upload Handlers
+  const handleModalFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadLoading(true);
+      setUploadMessage('');
+      const dataUrl = await compressAndReadImage(file);
+      setProductForm((prev) => ({ ...prev, image: dataUrl }));
+      setUploadMessage('تم رفع الصورة ومعالجتها بنجاح!');
+      setTimeout(() => setUploadMessage(''), 3000);
+    } catch (err) {
+      alert(err.message || 'حدث خطأ أثناء رفع الصورة');
+    } finally {
+      setUploadLoading(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleQuickRowImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !quickUploadTargetId) return;
+    try {
+      setUploadLoading(true);
+      const dataUrl = await compressAndReadImage(file);
+      updateProduct(quickUploadTargetId, { image: dataUrl });
+      setUploadMessage('تم تغيير صورة الوجبة بنجاح!');
+      setTimeout(() => setUploadMessage(''), 3000);
+    } catch (err) {
+      alert(err.message || 'حدث خطأ أثناء رفع الصورة');
+    } finally {
+      setUploadLoading(false);
+      setQuickUploadTargetId(null);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const triggerQuickRowUpload = (productId) => {
+    setQuickUploadTargetId(productId);
+    setTimeout(() => {
+      if (quickFileInputRef.current) {
+        quickFileInputRef.current.click();
+      }
+    }, 50);
+  };
 
   if (!isOpen) return null;
 
@@ -640,6 +749,15 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
                   </select>
                 </div>
 
+                {/* Quick Row Image Upload Input */}
+                <input
+                  type="file"
+                  ref={quickFileInputRef}
+                  onChange={handleQuickRowImageUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+
                 {/* Table View */}
                 <div className="overflow-x-auto rounded-xl border border-slate-800 bg-[#161a23]">
                   <table className="w-full text-right text-xs text-slate-300">
@@ -666,13 +784,28 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
                             <tr key={prod.id} className="hover:bg-slate-800/40 transition-colors">
                               <td className="p-3">
                                 <div className="flex items-center space-x-3 space-x-reverse">
-                                  <img
-                                    src={prod.image}
-                                    alt={prod.name}
-                                    className="w-10 h-10 rounded-lg object-cover bg-slate-900 border border-slate-800"
-                                  />
+                                  <div
+                                    onClick={() => triggerQuickRowUpload(prod.id)}
+                                    className="relative group/img cursor-pointer w-11 h-11 flex-shrink-0 rounded-lg overflow-hidden border border-amber-500/30 bg-slate-900 shadow"
+                                    title="انقر لتغيير صورة هذه الوجبة مباشرة من الجهاز"
+                                  >
+                                    <img
+                                      src={prod.image || 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80'}
+                                      alt={prod.name}
+                                      className="w-full h-full object-cover transition-transform duration-300 group-hover/img:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center text-amber-400 text-[9px] font-extrabold">
+                                      <Camera className="w-4 h-4 mb-0.5" />
+                                      <span>تغيير</span>
+                                    </div>
+                                  </div>
                                   <div>
-                                    <div className="font-bold text-white">{prod.name}</div>
+                                    <div className="font-bold text-white flex items-center space-x-1.5 space-x-reverse">
+                                      <span>{prod.name}</span>
+                                      {prod.is_popular && (
+                                        <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded">مميز</span>
+                                      )}
+                                    </div>
                                     <div className="text-[10px] text-slate-400 line-clamp-1 max-w-xs">
                                       {prod.description}
                                     </div>
@@ -716,9 +849,17 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
                               <td className="p-3 text-center">
                                 <div className="flex items-center justify-center space-x-2 space-x-reverse">
                                   <button
+                                    onClick={() => triggerQuickRowUpload(prod.id)}
+                                    className="p-1.5 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 rounded-lg border border-blue-500/30 transition-colors flex items-center space-x-1 space-x-reverse cursor-pointer"
+                                    title="رفع وتغيير صورة الوجبة من الجهاز"
+                                  >
+                                    <Camera className="w-4 h-4 text-blue-400" />
+                                  </button>
+
+                                  <button
                                     onClick={() => openEditProductModal(prod)}
                                     className="p-1.5 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 rounded-lg border border-amber-500/30 transition-colors"
-                                    title="تعديل"
+                                    title="تعديل التفاصيل"
                                   >
                                     <Edit3 className="w-4 h-4" />
                                   </button>
@@ -864,14 +1005,139 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="font-bold text-slate-300">رابط صورة الوجبة (Image URL)</label>
-                <input
-                  type="text"
-                  value={productForm.image}
-                  onChange={(e) => setProductForm({ ...productForm, image: e.target.value })}
-                  className="w-full bg-[#161a23] border border-slate-700 rounded-xl p-2.5 text-white dir-ltr"
-                />
+              {/* Image Upload & Management Section */}
+              <div className="space-y-2 border border-slate-800 bg-[#161a23]/80 rounded-xl p-3">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-amber-400 flex items-center space-x-1.5 space-x-reverse">
+                    <Camera className="w-4 h-4 text-amber-400" />
+                    <span>صورة الوجبة (رفع جديدة أو تغيير)</span>
+                  </label>
+                  <span className="text-[11px] text-slate-400">يمكنك رفع صورة من جهازك أو اختياره من المعرض</span>
+                </div>
+
+                {/* Live Image Preview */}
+                <div className="flex items-center space-x-3 space-x-reverse bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
+                  <img
+                    src={productForm.image || 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80'}
+                    alt="معاينة الصورة"
+                    className="w-16 h-16 rounded-lg object-cover border border-amber-500/40 bg-slate-950 flex-shrink-0"
+                  />
+                  <div className="flex-1 text-xs space-y-1">
+                    <div className="font-bold text-slate-200">الصورة الحالية للمنتج</div>
+                    <div className="text-[10px] text-slate-400 line-clamp-1 break-all">
+                      {productForm.image.startsWith('data:') ? 'صورة مرفوعة رسمياً (Base64)' : productForm.image || 'لم يتم اختيار صورة بعد'}
+                    </div>
+                    {uploadMessage && (
+                      <div className="text-emerald-400 font-bold text-[11px] flex items-center space-x-1 space-x-reverse">
+                        <Check className="w-3.5 h-3.5" />
+                        <span>{uploadMessage}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tabs for Image Input Mode */}
+                <div className="flex border-b border-slate-800 text-[11px] gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setImageTab('upload')}
+                    className={`py-1.5 px-2.5 rounded-t-lg font-bold transition-colors flex items-center space-x-1 space-x-reverse cursor-pointer ${
+                      imageTab === 'upload'
+                        ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10'
+                        : 'text-slate-400 hover:text-slate-200 bg-slate-900/40'
+                    }`}
+                  >
+                    <Upload className="w-3.5 h-3.5 text-amber-400" />
+                    <span>رفع صورة من الجهاز</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setImageTab('preset')}
+                    className={`py-1.5 px-2.5 rounded-t-lg font-bold transition-colors flex items-center space-x-1 space-x-reverse cursor-pointer ${
+                      imageTab === 'preset'
+                        ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10'
+                        : 'text-slate-400 hover:text-slate-200 bg-slate-900/40'
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>صور جاهزة</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setImageTab('url')}
+                    className={`py-1.5 px-2.5 rounded-t-lg font-bold transition-colors flex items-center space-x-1 space-x-reverse cursor-pointer ${
+                      imageTab === 'url'
+                        ? 'border-b-2 border-amber-400 text-amber-400 bg-amber-500/10'
+                        : 'text-slate-400 hover:text-slate-200 bg-slate-900/40'
+                    }`}
+                  >
+                    <LinkIcon className="w-3.5 h-3.5 text-amber-400" />
+                    <span>رابط مباشر (URL)</span>
+                  </button>
+                </div>
+
+                {/* Upload from device tab */}
+                {imageTab === 'upload' && (
+                  <div className="pt-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleModalFileUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      disabled={uploadLoading}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full border-2 border-dashed border-amber-500/50 hover:border-amber-400 bg-amber-500/5 hover:bg-amber-500/10 transition-all rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer group"
+                    >
+                      <Upload className="w-6 h-6 text-amber-400 mb-1 group-hover:scale-110 transition-transform" />
+                      <span className="font-bold text-amber-300 text-xs">
+                        {uploadLoading ? 'جاري رفع وضغط الصورة...' : 'انقر لرفع صورة من الهاتف أو الكمبيوتر'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-0.5">يدعم جميع الصور (JPG, PNG, WEBP) ويسحبها بحجم مثالي وسريع</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Preset Images tab */}
+                {imageTab === 'preset' && (
+                  <div className="pt-2 grid grid-cols-3 gap-2 max-h-40 overflow-y-auto pr-1">
+                    {PRESET_FOOD_IMAGES.map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          setProductForm((prev) => ({ ...prev, image: preset.url }));
+                          setUploadMessage(`تم اختار: ${preset.label}`);
+                          setTimeout(() => setUploadMessage(''), 2500);
+                        }}
+                        className={`relative rounded-lg overflow-hidden border p-1 text-right transition-all cursor-pointer ${
+                          productForm.image === preset.url
+                            ? 'border-amber-400 bg-amber-500/20 shadow-md shadow-amber-500/20'
+                            : 'border-slate-800 hover:border-slate-700 bg-slate-900'
+                        }`}
+                      >
+                        <img src={preset.url} alt={preset.label} className="w-full h-12 object-cover rounded" />
+                        <span className="text-[10px] font-bold text-slate-200 block truncate mt-1">{preset.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* URL Direct Input tab */}
+                {imageTab === 'url' && (
+                  <div className="pt-2">
+                    <input
+                      type="text"
+                      placeholder="https://example.com/image.jpg"
+                      value={productForm.image}
+                      onChange={(e) => setProductForm({ ...productForm, image: e.target.value })}
+                      className="w-full bg-[#12161f] border border-slate-700 rounded-xl p-2.5 text-white dir-ltr text-xs focus:border-amber-400"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center space-x-6 space-x-reverse pt-2">
