@@ -3,40 +3,7 @@ import { INITIAL_CATEGORIES, INITIAL_PRODUCTS } from '../data/initialData';
 
 const MenuContext = createContext();
 
-const SAMPLE_ORDERS = [
-  {
-    id: "ord_1001",
-    customer_name: "أحمد محمود",
-    order_type: "table",
-    table_number: "ترابيزة 4",
-    delivery_address: "",
-    notes: "زيادة طحينة وصوص برياني",
-    whatsapp_number: "01066568284",
-    total_price: 970.00,
-    status: "completed",
-    date: new Date().toISOString(),
-    items: [
-      { id: "p1", name: "Quarter Mandi Chicken", quantity: 2, price: 170.00 },
-      { id: "p41", name: "فرخة مندي مع رز بسمتي شوربة وسلطة وطحينة (صينية بدوي)", quantity: 1, price: 600.00 },
-      { id: "p105", name: "شاي زرد بدوي", quantity: 1, price: 60.00 }
-    ]
-  },
-  {
-    id: "ord_1002",
-    customer_name: "مهندس طارق العبد",
-    order_type: "delivery",
-    table_number: "",
-    delivery_address: "شارع 9، المعادي، عمارة 14، الشقة 5",
-    notes: "التوصيل سريع لو سمحت",
-    whatsapp_number: "01098128320",
-    total_price: 3200.00,
-    status: "completed",
-    date: new Date().toISOString(),
-    items: [
-      { id: "p47", name: "صنية التوفير", quantity: 1, price: 3200.00 }
-    ]
-  }
-];
+const SAMPLE_ORDERS = [];
 
 export const MenuProvider = ({ children }) => {
   const [categories, setCategories] = useState(() => {
@@ -139,6 +106,7 @@ export const MenuProvider = ({ children }) => {
     try {
       localStorage.removeItem('qasr_mandi_orders');
     } catch (e) {}
+    fetch('/api/orders', { method: 'DELETE' }).catch(() => {});
   };
 
   // Product CRUD

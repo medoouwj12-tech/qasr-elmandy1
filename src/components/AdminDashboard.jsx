@@ -570,6 +570,20 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
                       <option value="table">طلبات الترابيزة (المطعم)</option>
                       <option value="delivery">طلبات التوصيل (دليفري)</option>
                     </select>
+
+                    <button
+                      onClick={() => {
+                        if (confirm('هل أنت متأكد من تصفير ومسح جميع الفواتير والطلبات السابقة بالكامل للبدء على نظيف؟')) {
+                          clearOrdersHistory();
+                          alert('تم تصفير الفواتير بنجاح وأصبح النظام جاهزاً للبدء من جديد!');
+                        }
+                      }}
+                      className="px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-rose-300 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 space-x-reverse cursor-pointer shadow"
+                      title="مسح كافة الفواتير والبدء من صفر"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                      <span>تصفير الفواتير (بدء على نظيف)</span>
+                    </button>
                   </div>
                 </div>
 
