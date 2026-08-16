@@ -5,9 +5,18 @@ const MenuContext = createContext();
 
 const SAMPLE_ORDERS = [];
 
+const DATA_VERSION = 'qasr_mandi_v2_photos';
+
 export const MenuProvider = ({ children }) => {
   const [categories, setCategories] = useState(() => {
     try {
+      const version = localStorage.getItem('qasr_mandi_version');
+      if (version !== DATA_VERSION) {
+        localStorage.setItem('qasr_mandi_version', DATA_VERSION);
+        localStorage.setItem('qasr_mandi_categories', JSON.stringify(INITIAL_CATEGORIES));
+        localStorage.setItem('qasr_mandi_products', JSON.stringify(INITIAL_PRODUCTS));
+        return INITIAL_CATEGORIES;
+      }
       const saved = localStorage.getItem('qasr_mandi_categories');
       return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
     } catch (e) {
@@ -17,6 +26,10 @@ export const MenuProvider = ({ children }) => {
 
   const [products, setProducts] = useState(() => {
     try {
+      const version = localStorage.getItem('qasr_mandi_version');
+      if (version !== DATA_VERSION) {
+        return INITIAL_PRODUCTS;
+      }
       const saved = localStorage.getItem('qasr_mandi_products');
       return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
     } catch (e) {
