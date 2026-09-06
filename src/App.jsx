@@ -9,6 +9,9 @@ import { CartDrawer } from './components/CartDrawer';
 import { WhatsAppCheckoutModal } from './components/WhatsAppCheckoutModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { Footer } from './components/Footer';
+import { InstallAppPrompt } from './components/InstallAppPrompt';
+import { MobileBottomNav } from './components/MobileBottomNav';
+import { FloatingCartBar } from './components/FloatingCartBar';
 import { ShoppingBag, UtensilsCrossed, Sparkles, ChefHat } from 'lucide-react';
 
 const MainMenuContent = () => {
@@ -24,8 +27,26 @@ const MainMenuContent = () => {
 
   const safeTotalPrice = (Number(totalPrice) || 0).toLocaleString();
 
+  const handleOpenCategories = () => {
+    const el = document.getElementById('category-nav');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleFocusSearch = () => {
+    const el = document.getElementById('main-search-input');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => el.focus(), 300);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#0d0f12] text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950">
+      {/* PWA / Mobile App Install Prompt */}
+      <InstallAppPrompt />
+
       {/* Header */}
       <Header
         onOpenAdmin={() => setIsAdminOpen(true)}
@@ -58,7 +79,7 @@ const MainMenuContent = () => {
       </section>
 
       {/* Main Products Grid */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 py-8 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 pt-6 pb-32 md:py-8 w-full">
         {/* Section Heading */}
         <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-800">
           <div className="flex items-center space-x-2 space-x-reverse">
@@ -104,29 +125,31 @@ const MainMenuContent = () => {
         )}
       </main>
 
-      {/* Floating Bottom Cart Bar (Mobile & Quick Access) */}
+      {/* Mobile Sticky Floating Cart Bar */}
+      <FloatingCartBar onOpenCart={() => setIsCartOpen(true)} />
+
+      {/* Desktop Floating Cart Button */}
       {totalItems > 0 && (
-        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:max-w-sm z-30 animate-fade-in">
+        <div className="hidden md:block fixed bottom-6 left-8 z-30 animate-fade-in">
           <button
             onClick={() => setIsCartOpen(true)}
-            className="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black p-3.5 rounded-2xl shadow-2xl shadow-amber-500/30 flex items-center justify-between border-2 border-amber-300 active:scale-95 transition-all cursor-pointer"
+            className="bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black px-5 py-3.5 rounded-2xl shadow-2xl shadow-amber-500/30 flex items-center space-x-3 space-x-reverse border-2 border-amber-300 active:scale-95 transition-all cursor-pointer"
           >
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <div className="bg-slate-950 text-amber-300 text-xs font-black w-7 h-7 rounded-full flex items-center justify-center">
-                {totalItems}
-              </div>
-              <span className="text-sm font-black">سلة الطلبات</span>
+            <div className="bg-slate-950 text-amber-300 text-xs font-black w-7 h-7 rounded-full flex items-center justify-center">
+              {totalItems}
             </div>
-
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <span className="text-base font-black">
-                {safeTotalPrice} EGP
-              </span>
-              <ShoppingBag className="w-5 h-5" />
-            </div>
+            <span className="text-sm font-black">سلة الطلبات ({safeTotalPrice} ج.م)</span>
+            <ShoppingBag className="w-5 h-5" />
           </button>
         </div>
       )}
+
+      {/* Mobile Bottom Navigation Bar */}
+      <MobileBottomNav
+        onOpenCart={() => setIsCartOpen(true)}
+        onOpenCategories={handleOpenCategories}
+        onFocusSearch={handleFocusSearch}
+      />
 
       {/* Drawers & Modals */}
       <CartDrawer

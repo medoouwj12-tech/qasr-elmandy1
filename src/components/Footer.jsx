@@ -4,7 +4,7 @@ import { OFFICIAL_WHATSAPP_NUMBERS } from '../data/initialData';
 
 export const Footer = ({ onOpenAdmin }) => {
   return (
-    <footer className="bg-[#0a0c0f] border-t border-slate-800 text-slate-400 text-xs py-10 mt-16">
+    <footer className="bg-[#0a0c0f] border-t border-slate-800 text-slate-400 text-xs pt-10 pb-24 md:pb-10 mt-16">
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Brand & About */}
         <div className="space-y-3">

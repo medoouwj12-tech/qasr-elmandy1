@@ -76,6 +76,7 @@ export const Header = ({ onOpenAdmin, onOpenCart }) => {
           <div className="relative flex-1">
             <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
+              id="main-search-input"
               type="text"
               placeholder="ابحث عن وجبتك المفضلة (مندي، كفتة، طرب، سمان...)"
               value={searchQuery || ''}

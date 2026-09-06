@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#1e2430" />
+      <stop offset="60%" stop-color="#12161f" />
+      <stop offset="100%" stop-color="#0d0f12" />
+    </radialGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="30%" stop-color="#f59e0b" />
+      <stop offset="70%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
+    </linearGradient>
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded rectangle -->
+  <rect width="512" height="512" rx="100" fill="url(#bgGrad)" />
+  <rect x="16" y="16" width="480" height="480" rx="90" fill="none" stroke="url(#goldGrad)" stroke-width="4" opacity="0.6" />
+
+  <!-- Ambient Golden Aura -->
+  <circle cx="256" cy="220" r="140" fill="url(#glowGrad)" />
+
+  <!-- Royal Crown Icon -->
+  <g transform="translate(106, 80) scale(12.5)" filter="url(#goldGlow)">
+    <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" fill="url(#goldGrad)" />
+  </g>
+
+  <!-- Brand Arabic Title -->
+  <text x="256" y="405" text-anchor="middle" font-family="'Cairo', 'Tajawal', sans-serif, system-ui" font-size="52" font-weight="900" fill="url(#goldGrad)" letter-spacing="1">قصر المندي</text>
+
+  <!-- Subtitle -->
+  <text x="256" y="445" text-anchor="middle" font-family="'Cairo', 'Tajawal', sans-serif, system-ui" font-size="20" font-weight="600" fill="#fde68a" opacity="0.85">أصالة المذاق العربي والمشويات</text>
+</svg>

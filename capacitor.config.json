@@ -1,0 +1,11 @@
+{
+  "appId": "com.qasrelmandi.menu",
+  "appName": "قصر المندي",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

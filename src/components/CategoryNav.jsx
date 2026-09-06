@@ -22,7 +22,7 @@ export const CategoryNav = () => {
   const safeCategories = categories && Array.isArray(categories) ? categories : [];
 
   return (
-    <div className="sticky top-[105px] md:top-[73px] z-20 bg-[#0d0f12]/90 backdrop-blur-md border-b border-slate-800 py-3 shadow-md">
+    <div id="category-nav" className="sticky top-[105px] md:top-[73px] z-20 bg-[#0d0f12]/90 backdrop-blur-md border-b border-slate-800 py-3 shadow-md">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center space-x-2 space-x-reverse overflow-x-auto no-scrollbar pb-1">
           {/* "All" Category Tab */}
