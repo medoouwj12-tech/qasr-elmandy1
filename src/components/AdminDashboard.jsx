@@ -5,7 +5,7 @@ import {
   TrendingUp, Calendar, ShoppingBag, Printer, FileSpreadsheet, CheckCircle2,
   Clock, MapPin, User, Phone, Upload, Camera, Image as ImageIcon, Link as LinkIcon, Sparkles
 } from 'lucide-react';
-import { useMenu } from '../context/MenuContext';
+import { useMenu, normalizeArabic } from '../context/MenuContext';
 
 const PRESET_FOOD_IMAGES = [
   { label: 'دجاج مندي', url: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=800&q=80' },
@@ -238,13 +238,14 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
     setIsCategoryModalOpen(false);
   };
 
-  // Filtered admin products list
+  // Filtered admin products list with Arabic normalization
+  const normalizedAdminSearch = normalizeArabic(adminSearch);
   const adminFilteredProducts = products.filter((p) => {
     const catMatch = filterCat === 'all' || p.category_id === filterCat;
     const searchMatch =
-      !adminSearch.trim() ||
-      p.name.toLowerCase().includes(adminSearch.toLowerCase()) ||
-      (p.description && p.description.toLowerCase().includes(adminSearch.toLowerCase()));
+      !normalizedAdminSearch ||
+      normalizeArabic(p.name).includes(normalizedAdminSearch) ||
+      normalizeArabic(p.description).includes(normalizedAdminSearch);
     return catMatch && searchMatch;
   });
 

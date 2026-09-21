@@ -1,5 +1,5 @@
 // Qasr Al-Mandi Service Worker for Offline Caching & PWA App Experience
-const CACHE_NAME = 'qasr-elmandi-v1';
+const CACHE_NAME = 'qasr-elmandi-v2';
 
 const STATIC_ASSETS = [
   '/',

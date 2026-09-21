@@ -5,37 +5,44 @@ const MenuContext = createContext();
 
 const SAMPLE_ORDERS = [];
 
-const DATA_VERSION = 'qasr_mandi_v3_sawani';
+const DATA_VERSION = 'qasr_mandi_v5_sawani_fixed';
+
+export const normalizeArabic = (text) => {
+  if (!text || typeof text !== 'string') return '';
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/[ًٌٍَُِّْ]/g, '')
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .replace(/\s+/g, ' ');
+};
+
+const getInitialData = () => {
+  try {
+    const version = localStorage.getItem('qasr_mandi_version');
+    if (version !== DATA_VERSION) {
+      localStorage.setItem('qasr_mandi_version', DATA_VERSION);
+      localStorage.setItem('qasr_mandi_categories', JSON.stringify(INITIAL_CATEGORIES));
+      localStorage.setItem('qasr_mandi_products', JSON.stringify(INITIAL_PRODUCTS));
+      return { categories: INITIAL_CATEGORIES, products: INITIAL_PRODUCTS };
+    }
+    const savedCats = localStorage.getItem('qasr_mandi_categories');
+    const savedProds = localStorage.getItem('qasr_mandi_products');
+    return {
+      categories: savedCats ? JSON.parse(savedCats) : INITIAL_CATEGORIES,
+      products: savedProds ? JSON.parse(savedProds) : INITIAL_PRODUCTS
+    };
+  } catch (e) {
+    return { categories: INITIAL_CATEGORIES, products: INITIAL_PRODUCTS };
+  }
+};
 
 export const MenuProvider = ({ children }) => {
-  const [categories, setCategories] = useState(() => {
-    try {
-      const version = localStorage.getItem('qasr_mandi_version');
-      if (version !== DATA_VERSION) {
-        localStorage.setItem('qasr_mandi_version', DATA_VERSION);
-        localStorage.setItem('qasr_mandi_categories', JSON.stringify(INITIAL_CATEGORIES));
-        localStorage.setItem('qasr_mandi_products', JSON.stringify(INITIAL_PRODUCTS));
-        return INITIAL_CATEGORIES;
-      }
-      const saved = localStorage.getItem('qasr_mandi_categories');
-      return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
-    } catch (e) {
-      return INITIAL_CATEGORIES;
-    }
-  });
-
-  const [products, setProducts] = useState(() => {
-    try {
-      const version = localStorage.getItem('qasr_mandi_version');
-      if (version !== DATA_VERSION) {
-        return INITIAL_PRODUCTS;
-      }
-      const saved = localStorage.getItem('qasr_mandi_products');
-      return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-    } catch (e) {
-      return INITIAL_PRODUCTS;
-    }
-  });
+  const initial = getInitialData();
+  const [categories, setCategories] = useState(initial.categories);
+  const [products, setProducts] = useState(initial.products);
 
   const [orders, setOrders] = useState(() => {
     try {
@@ -209,16 +216,16 @@ export const MenuProvider = ({ children }) => {
     } catch (e) {}
   };
 
-  // Filter products safely
+  // Filter products safely with Arabic normalization
+  const normalizedQuery = normalizeArabic(searchQuery);
   const filteredProducts = (products || []).filter((product) => {
     if (!product) return false;
     const matchesCategory =
       activeCategory === 'all' || product.category_id === activeCategory;
     const matchesSearch =
-      searchQuery.trim() === '' ||
-      (product.name && product.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (product.description &&
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      !normalizedQuery ||
+      normalizeArabic(product.name).includes(normalizedQuery) ||
+      normalizeArabic(product.description).includes(normalizedQuery);
     return matchesCategory && matchesSearch;
   });
 
