@@ -212,6 +212,50 @@ export const INITIAL_PRODUCTS = [
   // Category 2: صوانى قصر المندى (cat_2)
   // ==========================================
   {
+    id: "p_tray_elhana",
+    category_id: "cat_2",
+    name: "صنية الهنا",
+    price: 900.00,
+    description: "6 وراك مشوية على الفحم + 6 صوابع سجق مشوي على الفحم بصوص حار + 6 صوابع كفتة",
+    image: "/images/tray-elhana.jpeg",
+    is_available: true,
+    is_popular: true,
+    order: 1
+  },
+  {
+    id: "p_tray_eldalaa",
+    category_id: "cat_2",
+    name: "صنية الدلع",
+    price: 1200.00,
+    description: "كيلو استربس (اسبايسي أو عادي حسب الطلب) + كيلو كفتة عجالي مشوي على الفحم",
+    image: "/images/tray-eldalaa.jpeg",
+    is_available: true,
+    is_popular: true,
+    order: 2
+  },
+  {
+    id: "p_tray_elhubb",
+    category_id: "cat_2",
+    name: "صنية الحب",
+    price: 800.00,
+    description: "ربع لحمة مندي + ربع طرب + ربع كفتة + رز بسمتي + شوربة سلامات",
+    image: "/images/tray-elhubb.jpeg",
+    is_available: true,
+    is_popular: true,
+    order: 3
+  },
+  {
+    id: "p_tray_elsabahia",
+    category_id: "cat_2",
+    name: "صنية الصباحية",
+    price: 900.00,
+    description: "2 حمام + ربع كفتة + ربع ممبار + محشي ورق عنب",
+    image: "/images/tray-elsabahia.jpeg",
+    is_available: true,
+    is_popular: true,
+    order: 4
+  },
+  {
     id: "p_tray_rob_teis",
     category_id: "cat_2",
     name: "صنية ربع تيس",
@@ -220,18 +264,18 @@ export const INITIAL_PRODUCTS = [
     image: "/images/rob-lahma-mandi.jpeg",
     is_available: true,
     is_popular: true,
-    order: 1
+    order: 5
   },
   {
     id: "p_tray_thomn_teis_super",
     category_id: "cat_2",
     name: "صنية ثمن تيس سوبر",
     price: 4200.00,
-    description: "ثمن تيس - فرخة مندى او مشوى - 12 قطعة كفتة - 24 قطعة شيش طاووق - 8 قطعة طرب ضانى - ارز - 2 سمان - 1 كيلو محاشى - صوص",
+    description: "ثمن تيس - فرخة مندى او مشوى - 12 قطعة كفتة - 24 قطعة شيش طاووق - 8 قطعة طرب ضانى - ارز - 2 سمان - 1 كيلو محاشى - صصوص",
     image: "/images/rob-lahma-mandi.jpeg",
     is_available: true,
     is_popular: true,
-    order: 2
+    order: 6
   },
   {
     id: "p_tray_tawfeer",
@@ -242,7 +286,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/kofta-200.jpeg",
     is_available: true,
     is_popular: true,
-    order: 3
+    order: 7
   },
   {
     id: "p_tray_abo_shanab",
@@ -253,7 +297,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/kebab-qeta.jpeg",
     is_available: true,
     is_popular: true,
-    order: 4
+    order: 8
   },
   {
     id: "p_tray_dalaa_karshak",
@@ -264,7 +308,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/tarab-dani.jpeg",
     is_available: true,
     is_popular: true,
-    order: 5
+    order: 9
   },
   {
     id: "p_tray_habiba",
@@ -275,7 +319,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/tarb-dani-full.jpeg",
     is_available: true,
     is_popular: true,
-    order: 6
+    order: 10
   },
   {
     id: "p_tray_fakhm",
@@ -286,7 +330,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/nos-farakh-mashwi.jpeg",
     is_available: true,
     is_popular: false,
-    order: 7
+    order: 11
   },
   {
     id: "p_tray_sohab",
@@ -297,7 +341,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/nos-farakh-mashwi.jpeg",
     is_available: true,
     is_popular: true,
-    order: 8
+    order: 12
   },
   {
     id: "p_tray_rawqan",
@@ -308,7 +352,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/sojok-mashwi.jpeg",
     is_available: true,
     is_popular: true,
-    order: 9
+    order: 13
   },
   {
     id: "p_tray_oshaq",
@@ -319,7 +363,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/kofta-200.jpeg",
     is_available: true,
     is_popular: true,
-    order: 10
+    order: 14
   },
   {
     id: "p_tray_muallem",
@@ -330,7 +374,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/kebab-qeta.jpeg",
     is_available: true,
     is_popular: true,
-    order: 11
+    order: 15
   },
   {
     id: "p_tray_panadol",
@@ -341,7 +385,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/reyash-mashwi.jpeg",
     is_available: true,
     is_popular: true,
-    order: 12
+    order: 16
   },
   {
     id: "p_tray_ozooma",
@@ -352,7 +396,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/shish-tawooq.jpeg",
     is_available: true,
     is_popular: true,
-    order: 13
+    order: 17
   },
   {
     id: "p_tray_abo_sayed",
@@ -363,7 +407,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/tarb-dani-full.jpeg",
     is_available: true,
     is_popular: false,
-    order: 14
+    order: 18
   },
   {
     id: "p_tray_andalus",
@@ -374,7 +418,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/sojok-mashwi.jpeg",
     is_available: true,
     is_popular: false,
-    order: 15
+    order: 19
   },
   {
     id: "p_tray_osra",
@@ -385,7 +429,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/nos-farakh-mashwi.jpeg",
     is_available: true,
     is_popular: true,
-    order: 16
+    order: 20
   },
   {
     id: "p_tray_amoora_dahab",
@@ -396,7 +440,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/reyash-mashwi.jpeg",
     is_available: true,
     is_popular: true,
-    order: 17
+    order: 21
   },
   {
     id: "p_tray_mix_grill",
@@ -407,7 +451,7 @@ export const INITIAL_PRODUCTS = [
     image: "/images/kebab-qeta.jpeg",
     is_available: true,
     is_popular: true,
-    order: 18
+    order: 22
   },
 
   // ==========================================

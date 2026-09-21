@@ -5,7 +5,7 @@ const MenuContext = createContext();
 
 const SAMPLE_ORDERS = [];
 
-const DATA_VERSION = 'qasr_mandi_v2_photos';
+const DATA_VERSION = 'qasr_mandi_v3_sawani';
 
 export const MenuProvider = ({ children }) => {
   const [categories, setCategories] = useState(() => {
