@@ -1,11 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   X, ShieldCheck, Plus, Edit3, Trash2, Check, AlertCircle, RefreshCw,
   Search, Lock, Layers, Utensils, DollarSign, ToggleLeft, ToggleRight,
   TrendingUp, Calendar, ShoppingBag, Printer, FileSpreadsheet, CheckCircle2,
-  Clock, MapPin, User, Phone, Upload, Camera, Image as ImageIcon, Link as LinkIcon, Sparkles
+  Clock, MapPin, User, Phone, Upload, Camera, Image as ImageIcon, Link as LinkIcon, Sparkles, LogOut
 } from 'lucide-react';
 import { useMenu, normalizeArabic } from '../context/MenuContext';
+import { supabase } from '../lib/supabaseClient';
 
 const PRESET_FOOD_IMAGES = [
   { label: 'دجاج مندي', url: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=800&q=80' },
@@ -79,11 +80,28 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
     resetToDefaultData
   } = useMenu();
 
-  // Auth State
+  // Auth State (Supabase Auth)
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState('');
+  const [sessionChecked, setSessionChecked] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
+
+  useEffect(() => {
+    if (!supabase) {
+      setSessionChecked(true);
+      return;
+    }
+    supabase.auth.getSession().then(({ data }) => {
+      setIsAuthenticated(Boolean(data.session));
+      setSessionChecked(true);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(Boolean(session));
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   // Active Sub-tab ('products' | 'categories' | 'sales')
   const [adminTab, setAdminTab] = useState('sales');
@@ -168,15 +186,34 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  // Handle Auth Login
-  const handleLogin = (e) => {
+  // Handle Auth Login (Supabase Auth)
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (username === 'admin' && (password === 'mandi2026' || password === 'admin')) {
-      setIsAuthenticated(true);
-      setAuthError('');
-    } else {
-      setAuthError('اسم المستخدم أو كلمة المرور غير صحيحة');
+    setAuthError('');
+    if (!supabase) {
+      setAuthError('لم يتم إعداد Supabase بعد — أضف VITE_SUPABASE_URL و VITE_SUPABASE_ANON_KEY');
+      return;
     }
+    setLoginLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setAuthError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+      } else {
+        setPassword('');
+      }
+    } catch {
+      setAuthError('تعذر الاتصال بخادم تسجيل الدخول');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+    setIsAuthenticated(false);
   };
 
   // Product Modal Submit
@@ -322,12 +359,24 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center space-x-2 space-x-reverse">
+            {isAuthenticated && (
+              <button
+                onClick={handleLogout}
+                className="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition-colors flex items-center space-x-1 space-x-reverse text-xs"
+                title="تسجيل الخروج"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden md:inline font-bold">خروج</span>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Auth Barrier */}
@@ -339,49 +388,58 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
               </div>
               <h3 className="text-xl font-bold text-white">تسجيل دخول المدير</h3>
               <p className="text-xs text-slate-400">
-                أدخل اسم المستخدم وكلمة المرور للوصول إلى لوحة التحكم والتقارير
+                أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى لوحة التحكم والتقارير
               </p>
             </div>
 
-            {authError && (
-              <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs flex items-center space-x-2 space-x-reverse">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                <span>{authError}</span>
-              </div>
+            {!sessionChecked ? (
+              <div className="text-center text-xs text-slate-400 py-6">جاري التحقق من الجلسة...</div>
+            ) : (
+              <>
+                {authError && (
+                  <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs flex items-center space-x-2 space-x-reverse">
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>{authError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-300">البريد الإلكتروني</label>
+                    <input
+                      type="email"
+                      required
+                      dir="ltr"
+                      placeholder="owner@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-[#161a23] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-300">كلمة المرور</label>
+                    <input
+                      type="password"
+                      required
+                      dir="ltr"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-[#161a23] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loginLoading}
+                    className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black py-3 rounded-xl shadow-lg shadow-amber-500/20 text-sm cursor-pointer disabled:opacity-60"
+                  >
+                    {loginLoading ? 'جاري التحقق...' : 'تسجيل الدخول'}
+                  </button>
+                </form>
+              </>
             )}
-
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-300">اسم المستخدم</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="admin"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-[#161a23] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-300">كلمة المرور</label>
-                <input
-                  type="password"
-                  required
-                  placeholder="mandi2026"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-[#161a23] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black py-3 rounded-xl shadow-lg shadow-amber-500/20 text-sm cursor-pointer"
-              >
-                تسجيل الدخول
-              </button>
-            </form>
           </div>
         ) : (
           /* Main Dashboard Content */
@@ -460,7 +518,11 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
                 )}
 
                 <button
-                  onClick={resetToDefaultData}
+                  onClick={() => {
+                    if (confirm('سيتم استعادة جميع الوجبات الأصلية (78 وجبة) ومسح تعديلاتك الحالية من قاعدة البيانات نهائياً. هل أنت متأكد؟')) {
+                      resetToDefaultData();
+                    }
+                  }}
                   className="bg-slate-800 hover:bg-slate-700 text-rose-400 px-3 py-2 rounded-lg text-xs flex items-center space-x-1 space-x-reverse border border-slate-700 transition-colors"
                   title="استعادة البيانات الأصلية كاملة"
                 >
@@ -927,7 +989,10 @@ export const AdminDashboard = ({ isOpen, onClose }) => {
 
                       <button
                         onClick={() => {
-                          if (confirm(`حذف قسم "${cat.name_ar}"؟`)) {
+                          const warn = itemsInCat.length > 0
+                            ? `حذف قسم "${cat.name_ar}"؟ سيتم حذف جميع وجباته (${itemsInCat.length} وجبة) نهائياً من القائمة.`
+                            : `حذف قسم "${cat.name_ar}"؟`;
+                          if (confirm(warn)) {
                             deleteCategory(cat.id);
                           }
                         }}

@@ -1,12 +1,6 @@
 import { getDbPool } from './_db.js';
-
-const INITIAL_CATEGORIES = [
-  { id: "cat_1", name_ar: "وجبات قصر المندى واللحوم", name_en: "Mandi & Meat Meals", icon: "UtensilsCrossed", order: 1 },
-  { id: "cat_2", name_ar: "صوانى قصر المندى", name_en: "Qasr Al-Mandi Platters", icon: "Flame", order: 2 },
-  { id: "cat_3", name_ar: "ركن المشويات", name_en: "Grill Corner", icon: "Beef", order: 3 },
-  { id: "cat_4", name_ar: "سندوتشات", name_en: "Sandwiches", icon: "Sandwich", order: 4 },
-  { id: "cat_5", name_ar: "مشروبات قصر المندى", name_en: "Beverages", icon: "Coffee", order: 5 }
-];
+import { requireAdmin } from './_auth.js';
+import { INITIAL_CATEGORIES, INITIAL_PRODUCTS } from '../src/data/initialData.js';
 
 export default async function handler(req, res) {
   const pool = getDbPool();
@@ -18,8 +12,25 @@ export default async function handler(req, res) {
     });
   }
 
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  // Factory reset: wipe menu and reseed from initialData (requires admin auth)
+  const wantsReset = req.method === 'POST' && req.body && req.body.reset === true;
+  if (wantsReset) {
+    const auth = await requireAdmin(req);
+    if (!auth.ok) {
+      return res.status(401).json({ success: false, error: auth.error });
+    }
+  }
+
+  const client = await pool.connect();
   try {
-    const client = await pool.connect();
+    if (wantsReset) {
+      await client.query('DELETE FROM products');
+      await client.query('DELETE FROM categories');
+    }
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS categories (
@@ -66,14 +77,41 @@ export default async function handler(req, res) {
       );
     }
 
-    client.release();
+    let seededProducts = 0;
+    for (const p of INITIAL_PRODUCTS) {
+      const result = await client.query(
+        `INSERT INTO products (id, category_id, name, price, description, image, is_available, is_popular, order_index)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (id) DO NOTHING`,
+        [
+          p.id,
+          p.category_id,
+          p.name,
+          p.price,
+          p.description || '',
+          p.image || '',
+          p.is_available ?? true,
+          p.is_popular ?? false,
+          p.order ?? 0
+        ]
+      );
+      seededProducts += result.rowCount || 0;
+    }
+
+    const catCount = await client.query('SELECT COUNT(*)::int AS count FROM categories');
+    const prodCount = await client.query('SELECT COUNT(*)::int AS count FROM products');
 
     return res.status(200).json({
       success: true,
-      message: 'Neon PostgreSQL Database successfully initialized for Qasr Al-Mandi!'
+      message: 'Supabase database successfully initialized for Qasr Al-Mandi!',
+      seeded_products: seededProducts,
+      total_categories: catCount.rows[0].count,
+      total_products: prodCount.rows[0].count
     });
   } catch (error) {
-    console.error('Neon Init Error:', error);
+    console.error('Supabase Init Error:', error);
     return res.status(500).json({ success: false, error: error.message });
+  } finally {
+    client.release();
   }
 }

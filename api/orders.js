@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (!pool) {
     return res.status(200).json({
       fallback: true,
-      message: 'No Neon DATABASE_URL configured. Falling back to local storage.'
+      message: 'No DATABASE_URL configured. Falling back to local storage.'
     });
   }
 
